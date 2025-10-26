@@ -1,0 +1,4 @@
+http("name of this step")
+    .get("/users")
+    .disableUrlEncoding()
+.check(status().is(200))

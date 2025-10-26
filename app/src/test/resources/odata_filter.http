@@ -1,0 +1,1 @@
+GET /products?$filter=price%20gt%2020

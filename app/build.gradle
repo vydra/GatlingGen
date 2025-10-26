@@ -45,3 +45,7 @@ application {
     // Define the main class for the application.
     mainClass = 'ggen.CLI'
 }
+
+run {
+    workingDir = project.rootDir
+}

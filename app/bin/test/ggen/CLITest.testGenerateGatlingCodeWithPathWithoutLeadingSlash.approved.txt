@@ -1,0 +1,5 @@
+http("name of this step")
+    .get("/users")
+    .disableUrlEncoding()
+    .queryParam("id","123")
+.check(status().is(200))

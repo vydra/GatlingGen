@@ -1,0 +1,23 @@
+GET:
+http("name of this step")
+    .get("/users")
+    .disableUrlEncoding()
+.check(status().is(200))
+
+POST:
+http("name of this step")
+    .post("/users")
+    .disableUrlEncoding()
+.check(status().is(200))
+
+PUT:
+http("name of this step")
+    .put("/users/123")
+    .disableUrlEncoding()
+.check(status().is(200))
+
+DELETE:
+http("name of this step")
+    .delete("/users/123")
+    .disableUrlEncoding()
+.check(status().is(200))

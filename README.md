@@ -8,14 +8,14 @@ Take HTTP calls as input and generate Gatling Simulations
 Run the CLI using the provided shell script:
 
 ```bash
-./ggen "http call"
-Ex: ./ggen "GET policies?$select=code&$filter=code%20eq%20'excludeLate'&$skip=0&$top=100"
+./ggen <filename>.http
+Ex: ./ggen get_abc.http
 ```
 
 Or use Gradle directly:
 
 ```bash
-./gradlew run --args="GET policies?$select=code&$filter=code%20eq%20'excludeLate'&$skip=0&$top=100"
+./gradlew run --args=get_abc.http
 ```
 
 ## Roadmap

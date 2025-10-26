@@ -3,6 +3,7 @@ package ggen;
 import org.approvaltests.Approvals;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import java.io.IOException;
 
 class CLITest {
     
@@ -11,51 +12,51 @@ class CLITest {
     }
     
     @Test
-    void testGenerateGatlingCodeWithSpecExample() {
+    void testGenerateGatlingCodeWithSpecExample() throws IOException {
         CLI cli = new CLI();
-        String input = "GET policies?$select=code&$filter=code%20eq%20'excludeLate'&$skip=0&$top=100";
+        String filename = "src/test/resources/get_policies.http";
         
-        String result = cli.generateGatlingCode(input);
+        String result = cli.generateGatlingCodeFromFile(filename);
         
         Approvals.verify(normalizeLineEndings(result));
     }
     
     @Test
-    void testGenerateGatlingCodeSimpleGet() {
+    void testGenerateGatlingCodeSimpleGet() throws IOException {
         CLI cli = new CLI();
-        String input = "GET /users";
+        String filename = "src/test/resources/simple_get.http";
         
-        String result = cli.generateGatlingCode(input);
+        String result = cli.generateGatlingCodeFromFile(filename);
         
         Approvals.verify(normalizeLineEndings(result));
     }
     
     @Test
-    void testGenerateGatlingCodeWithQueryParams() {
+    void testGenerateGatlingCodeWithQueryParams() throws IOException {
         CLI cli = new CLI();
-        String input = "GET /users?name=john&age=30";
+        String filename = "src/test/resources/get_with_query_params.http";
         
-        String result = cli.generateGatlingCode(input);
+        String result = cli.generateGatlingCodeFromFile(filename);
         
         Approvals.verify(normalizeLineEndings(result));
     }
     
     @Test
-    void testGenerateGatlingCodePostRequest() {
+    void testGenerateGatlingCodePostRequest() throws IOException {
         CLI cli = new CLI();
-        String input = "POST /api/users?format=json";
+        String filename = "src/test/resources/post_request.http";
         
-        String result = cli.generateGatlingCode(input);
+        String result = cli.generateGatlingCodeFromFile(filename);
         
         Approvals.verify(normalizeLineEndings(result));
     }
     
     @Test
-    void testGenerateGatlingCodeWithODataFilter() {
+    void testGenerateGatlingCodeWithODataFilter() throws IOException {
         CLI cli = new CLI();
-        String input = "GET /products?$filter=price%20gt%2020";
+        String filename = "src/test/resources/odata_filter.http";
         
-        String result = cli.generateGatlingCode(input);
+        String result = cli.generateGatlingCodeFromFile(filename);
         
         Approvals.verify(normalizeLineEndings(result));
     }
@@ -83,31 +84,45 @@ class CLITest {
     @Test
     void testGenerateGatlingCodeWithDifferentHttpMethods() {
         CLI cli = new CLI();
+
+        String results = "GET:\n" +
+                         cli.generateGatlingCode("GET /users") + "\n\n" +
+                         "POST:\n" +
+                         cli.generateGatlingCode("POST /users") + "\n\n" +
+                         "PUT:\n" +
+                         cli.generateGatlingCode("PUT /users/123") + "\n\n" +
+                         "DELETE:\n" +
+                         cli.generateGatlingCode("DELETE /users/123");
         
-        StringBuilder results = new StringBuilder();
-        results.append("GET:\n");
-        results.append(cli.generateGatlingCode("GET /users")).append("\n\n");
-        
-        results.append("POST:\n");
-        results.append(cli.generateGatlingCode("POST /users")).append("\n\n");
-        
-        results.append("PUT:\n");
-        results.append(cli.generateGatlingCode("PUT /users/123")).append("\n\n");
-        
-        results.append("DELETE:\n");
-        results.append(cli.generateGatlingCode("DELETE /users/123"));
-        
-        Approvals.verify(normalizeLineEndings(results.toString()));
+        Approvals.verify(normalizeLineEndings(results));
     }
     
     @Test
-    void testGenerateGatlingCodeWithPathWithoutLeadingSlash() {
+    void testGenerateGatlingCodeWithPathWithoutLeadingSlash() throws IOException {
         CLI cli = new CLI();
-        String input = "GET users?id=123";
+        String filename = "src/test/resources/path_without_slash.http";
         
-        String result = cli.generateGatlingCode(input);
+        String result = cli.generateGatlingCodeFromFile(filename);
         
         Approvals.verify(normalizeLineEndings(result));
+    }
+    
+    @Test
+    void testGenerateGatlingCodeFileNotFound() {
+        CLI cli = new CLI();
+        
+        assertThrows(IOException.class, () -> {
+            cli.generateGatlingCodeFromFile("nonexistent.http");
+        });
+    }
+    
+    @Test
+    void testGenerateGatlingCodeEmptyFile() {
+        CLI cli = new CLI();
+        
+        assertThrows(IllegalArgumentException.class, () -> {
+            cli.generateGatlingCodeFromFile("src/test/resources/empty_file.http");
+        });
     }
     
     @Test
