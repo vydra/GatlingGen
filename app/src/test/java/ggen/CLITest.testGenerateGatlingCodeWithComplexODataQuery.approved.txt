@@ -1,0 +1,7 @@
+http("name of this step")
+    .get("/odata/Products")
+    .disableUrlEncoding()
+    .queryParam("$filter",TXNUtils.encodeForOdata("Price gt 20 and Price lt 100"))
+    .queryParam("$orderby","Name")
+    .queryParam("$top","10")
+.check(status().is(200))

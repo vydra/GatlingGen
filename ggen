@@ -1,0 +1,13 @@
+#!/bin/bash
+# GatlingGen CLI runner script
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Run the Gradle application with all arguments passed through
+cd "$SCRIPT_DIR"
+if [ $# -eq 0 ]; then
+    ./gradlew -q run
+else
+    ./gradlew -q run --args="$*"
+fi

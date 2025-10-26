@@ -1,0 +1,5 @@
+http("name of this step")
+    .get("/products")
+    .disableUrlEncoding()
+    .queryParam("$filter",TXNUtils.encodeForOdata("price gt 20"))
+.check(status().is(200))

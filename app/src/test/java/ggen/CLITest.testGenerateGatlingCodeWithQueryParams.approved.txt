@@ -1,0 +1,6 @@
+http("name of this step")
+    .get("/users")
+    .disableUrlEncoding()
+    .queryParam("name","john")
+    .queryParam("age","30")
+.check(status().is(200))

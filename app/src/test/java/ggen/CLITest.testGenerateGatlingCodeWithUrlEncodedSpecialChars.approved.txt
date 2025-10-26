@@ -1,0 +1,6 @@
+http("name of this step")
+    .get("/search")
+    .disableUrlEncoding()
+    .queryParam("q","hello world")
+    .queryParam("email","user@example.com")
+.check(status().is(200))
