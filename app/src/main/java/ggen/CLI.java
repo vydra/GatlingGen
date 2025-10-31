@@ -53,7 +53,6 @@ public class CLI {
         if (args.length == 0) {
             System.err.println("Usage: ggen <filename.http>");
             System.err.println("Example: ggen get_policies.http");
-            System.err.println("The HTTP file should contain a line like: GET policies?$select=code&$filter=code%20eq%20'excludeLate'&$skip=0&$top=100");
             System.exit(1);
         }
 
