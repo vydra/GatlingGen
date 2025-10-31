@@ -17,6 +17,17 @@ public class CLI {
         );
     }
 
+    public String generateGatlingCode(String httpCall, String targetDirectory) {
+        HttpCallParser parser = new HttpCallParser(httpCall);
+        GatlingCodeGenerator generator = new GatlingCodeGenerator(targetDirectory);
+        
+        return generator.generate(
+            parser.getMethod(),
+            parser.getPath(),
+            parser.getQueryParams()
+        );
+    }
+
     public String generateGatlingCodeFromFile(String filename) throws IOException {
         Path filePath = Paths.get(filename);
         
@@ -34,7 +45,8 @@ public class CLI {
             throw new IllegalArgumentException("HTTP file is empty: " + filename);
         }
         
-        return generateGatlingCode(httpCall);
+        String targetDirectory = filePath.getParent() != null ? filePath.getParent().toString() : ".";
+        return generateGatlingCode(httpCall, targetDirectory);
     }
 
     public static void main(String[] args) {

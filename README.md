@@ -20,6 +20,10 @@ Or use Gradle directly:
 ./gradlew run --args=get_abc.http
 ```
 
+## Set target directory
+
+export the `GGEN_TARGET_DIR` environment variable to set the output directory.
+
 ## Roadmap
 
 Support OData format https://www.odata.org/

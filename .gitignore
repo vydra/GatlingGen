@@ -38,3 +38,4 @@ build
 
 # ApprovalTests received files (do not commit)
 *.received.*
+/app/bin/

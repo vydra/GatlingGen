@@ -1,9 +1,23 @@
 package ggen;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 public class GatlingCodeGenerator {
     private static final String INDENT = "    ";
+    private static final String DEFAULT_ENCODE_FUNCTION = "TXNUtils.encodeForOdata";
+    private final String encodeFunction;
+
+    public GatlingCodeGenerator() {
+        this.encodeFunction = DEFAULT_ENCODE_FUNCTION;
+    }
+
+    public GatlingCodeGenerator(String targetDirectory) {
+        this.encodeFunction = readEncodeFunctionFromConfig(targetDirectory);
+    }
 
     public String generate(String method, String path, Map<String, String> queryParams) {
         if (method == null || method.isEmpty()) {
@@ -27,7 +41,7 @@ public class GatlingCodeGenerator {
                 code.append(INDENT).append(".queryParam(\"").append(paramName).append("\",");
                 
                 if (isODataFilter(paramName, paramValue)) {
-                    code.append("TXNUtils.encodeForOdata(\"").append(paramValue).append("\")");
+                    code.append(encodeFunction).append("(\"").append(paramValue).append("\")");
                 } else {
                     code.append("\"").append(paramValue).append("\"");
                 }
@@ -42,24 +56,16 @@ public class GatlingCodeGenerator {
     }
 
     private String getGatlingMethod(String httpMethod) {
-        switch (httpMethod.toUpperCase()) {
-            case "GET":
-                return "get";
-            case "POST":
-                return "post";
-            case "PUT":
-                return "put";
-            case "DELETE":
-                return "delete";
-            case "PATCH":
-                return "patch";
-            case "HEAD":
-                return "head";
-            case "OPTIONS":
-                return "options";
-            default:
-                return "get";
-        }
+        return switch (httpMethod.toUpperCase()) {
+            case "GET" -> "get";
+            case "POST" -> "post";
+            case "PUT" -> "put";
+            case "DELETE" -> "delete";
+            case "PATCH" -> "patch";
+            case "HEAD" -> "head";
+            case "OPTIONS" -> "options";
+            default -> "get";
+        };
     }
 
     private boolean isODataFilter(String paramName, String paramValue) {
@@ -78,5 +84,28 @@ public class GatlingCodeGenerator {
                lowerValue.contains(" lt ") || 
                lowerValue.contains(" ge ") || 
                lowerValue.contains(" le ");
+    }
+
+    private String readEncodeFunctionFromConfig(String targetDirectory) {
+        if (targetDirectory == null || targetDirectory.isEmpty()) {
+            return DEFAULT_ENCODE_FUNCTION;
+        }
+
+        Path configPath = Paths.get(targetDirectory, ".ggen");
+        
+        if (!Files.exists(configPath)) {
+            return DEFAULT_ENCODE_FUNCTION;
+        }
+
+        try {
+            String configContent = Files.readString(configPath).trim();
+            if (configContent.startsWith("encodeFunction=")) {
+                return configContent.substring("encodeFunction=".length()).trim();
+            }
+        } catch (IOException e) {
+            System.err.println("Warning: Could not read config file " + configPath + ": " + e.getMessage());
+        }
+        // If we can't read the config, use default
+        return DEFAULT_ENCODE_FUNCTION;
     }
 }
