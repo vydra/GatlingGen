@@ -1,5 +1,7 @@
 == Summary ==
 
+Prompt: Modify GatlingCodeGenerator.java to read encode function name from config dir and substritute the specified name.
+
 Codemap: https://windsurf.com/codemaps/901a285f-ef1f-44c2-8c1e-afa03a6f0c54-a3c4e3458a9c15ff
 
 I'll help you modify the GatlingCodeGenerator.java to read the encode function name from a config directory and substitute it. Let me first examine the current code and understand the structure.
