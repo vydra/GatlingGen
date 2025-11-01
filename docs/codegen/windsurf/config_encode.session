@@ -13,7 +13,7 @@ Let me check the specs directory to understand the expected config format:
 Now I understand the requirements. I need to modify the GatlingCodeGenerator to:
 1. Read a config file named `.ggen` from the target directory
 2. Extract the `encodeFunction` value from the config
-3. Substitute the hardcoded `TXNUtils.encodeForOdata` with the configured function name
+3. Substitute the hardcoded `Utils.encodeForOdata` with the configured function name
 
 Let me examine the current main class to understand how the target directory is determined:
 
@@ -33,9 +33,9 @@ The issue is that when the file is in the root directory, `getParent()` returns 
 
 Now let me rebuild and test again:
 
-Perfect! The implementation is working correctly. The output shows that it's using `Utils.encode` instead of the default `TXNUtils.encodeForOdata`. Let me also test without the config file to ensure it falls back to the default:
+Perfect! The implementation is working correctly. The output shows that it's using `Utils.encode` instead of the default `Utils.encodeForOdata`. Let me also test without the config file to ensure it falls back to the default:
 
-Excellent! Now it's using the default `TXNUtils.encodeForOdata` when no config file is present. Let me restore the config file and clean up the test files:
+Excellent! Now it's using the default `Utils.encodeForOdata` when no config file is present. Let me restore the config file and clean up the test files:
 
 ## Summary
 
@@ -47,7 +47,7 @@ I successfully modified the [GatlingCodeGenerator.java](cci:7://file:///Users/I5
    - Added imports for file I/O operations
    - Added a new constructor that accepts a target directory parameter
    - Added [readEncodeFunctionFromConfig()](cci:1://file:///Users/I574426/dev/personal/GatlingGen/app/src/main/java/ggen/GatlingCodeGenerator.java:96:4-118:5) method to read [.ggen](cci:7://file:///Users/I574426/dev/personal/GatlingGen/.ggen:0:0-0:0) config files
-   - Modified the [generate()](cci:1://file:///Users/I574426/dev/personal/GatlingGen/app/src/main/java/ggen/GatlingCodeGenerator.java:21:4-55:5) method to use the configured encode function instead of hardcoded `TXNUtils.encodeForOdata`
+   - Modified the [generate()](cci:1://file:///Users/I574426/dev/personal/GatlingGen/app/src/main/java/ggen/GatlingCodeGenerator.java:21:4-55:5) method to use the configured encode function instead of hardcoded `Utils.encodeForOdata`
    - Added default fallback behavior when no config file exists
 
 2. **CLI.java**:
@@ -59,14 +59,14 @@ I successfully modified the [GatlingCodeGenerator.java](cci:7://file:///Users/I5
 
 - **Config file format**: [.ggen](cci:7://file:///Users/I574426/dev/personal/GatlingGen/.ggen:0:0-0:0) file with content like `encodeFunction=Utils.encode`
 - **Target directory detection**: Automatically uses the directory containing the input HTTP file
-- **Fallback behavior**: Uses `TXNUtils.encodeForOdata` as default when no config is found
+- **Fallback behavior**: Uses `Utils.encodeForOdata` as default when no config is found
 - **Error handling**: Gracefully handles missing or unreadable config files
 
 ### Testing:
 
 Verified the implementation works correctly:
 - With config file: Uses `Utils.encode` function as specified
-- Without config file: Falls back to default `TXNUtils.encodeForOdata`
+- Without config file: Falls back to default `Utils.encodeForOdata`
 - Handles files in root directory properly
 
 The implementation follows the specifications in [cli.config.spec.md](cci:7://file:///Users/I574426/dev/personal/GatlingGen/specs/cli.config.spec.md:0:0-0:0) and maintains backward compatibility.
@@ -91,7 +91,7 @@ Now I understand the requirements. I need to modify the GatlingCodeGenerator to:
 
 Read a config file named .ggen from the target directory
 Extract the encodeFunction value from the config
-Substitute the hardcoded TXNUtils.encodeForOdata with the configured function name
+Substitute the hardcoded Utils.encodeForOdata with the configured function name
 Let me examine the current main class to understand how the target directory is determined:
 
 Now I need to create a todo list and implement the changes. The target directory should be the directory containing the input HTTP file, and I need to read the .ggen config file from there.
@@ -182,7 +182,7 @@ Late'"))                                                    .queryParam("$skip",
     .queryParam("$top","100")
 .check(status().is(200))
 Exit Code 0
-Perfect! The implementation is working correctly. The output shows that it's using Utils.encode instead of the default TXNUtils.encodeForOdata. Let me also test without the config file to ensure it falls back to the default:
+Perfect! The implementation is working correctly. The output shows that it's using Utils.encode instead of the default Utils.encodeForOdata. Let me also test without the config file to ensure it falls back to the default:
 
 ~/…/GatlingGen$ mv .ggen .ggen.backup
 
@@ -194,12 +194,12 @@ http("name of this step")
     .get("/policies")
     .disableUrlEncoding()
     .queryParam("$select","code")
-    .queryParam("$filter",TXNUtils.encodeForOdata("code
+    .queryParam("$filter",Utils.encodeForOdata("code
 eq 'excludeLate'"))                                         .queryParam("$skip","0")
     .queryParam("$top","100")
 .check(status().is(200))
 Exit Code 0
-Excellent! Now it's using the default TXNUtils.encodeForOdata when no config file is present. Let me restore the config file and clean up the test files:
+Excellent! Now it's using the default Utils.encodeForOdata when no config file is present. Let me restore the config file and clean up the test files:
 
 ~/…/GatlingGen$ mv .ggen.backup .ggen
 
@@ -223,7 +223,7 @@ readEncodeFunctionFromConfig()
  config files
 Modified the
 generate()
- method to use the configured encode function instead of hardcoded TXNUtils.encodeForOdata
+ method to use the configured encode function instead of hardcoded Utils.encodeForOdata
 Added default fallback behavior when no config file exists
 CLI.java:
 Added overloaded
@@ -238,13 +238,13 @@ Config file format:
 .ggen
  file with content like encodeFunction=Utils.encode
 Target directory detection: Automatically uses the directory containing the input HTTP file
-Fallback behavior: Uses TXNUtils.encodeForOdata as default when no config is found
+Fallback behavior: Uses Utils.encodeForOdata as default when no config is found
 Error handling: Gracefully handles missing or unreadable config files
 Testing:
 Verified the implementation works correctly:
 
 With config file: Uses Utils.encode function as specified
-Without config file: Falls back to default TXNUtils.encodeForOdata
+Without config file: Falls back to default Utils.encodeForOdata
 Handles files in root directory properly
 The implementation follows the specifications in
 cli.config.spec.md

@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class GatlingCodeGenerator {
     private static final String INDENT = "    ";
-    private static final String DEFAULT_ENCODE_FUNCTION = "TXNUtils.encodeForOdata";
+    private static final String DEFAULT_ENCODE_FUNCTION = "Utils.encodeForOdata";
     private final String encodeFunction;
 
     public GatlingCodeGenerator() {
