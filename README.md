@@ -24,9 +24,23 @@ Or use Gradle directly:
 
 export the `GGEN_TARGET_DIR` environment variable to set the output directory.
 
+## Configure target project
+
+Project-level configuration can be set using a `.ggen` file in the target directory.
+
+Example `.ggen` file:
+
+```text
+encodeFunction=Utils.encodeForOdata
+```
+
 ## Roadmap
 
 Support OData format https://www.odata.org/
+
+Record a live browser session via Google Developer Tools API. (experiment with MCP server: https://github.com/ChromeDevTools/chrome-devtools-mcp)
+
+Use Playwright to take screenshots during the recording session.
 
 For reference see: https://docs.gatling.io/reference/script/http/recorder/
 

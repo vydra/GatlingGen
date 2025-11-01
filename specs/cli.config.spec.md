@@ -6,14 +6,14 @@ Target directory environment variable is GGEN_TARGET_DIR
 
 ## Example .ggen file
 
-```encodeFunction=Utils.encode
+```encodeFunction=Utils.encodeForOdata
 ```
 
 ## Scenario: substitute function name
 
 GIVEN:
-FIle .ggen with content:
-```encodeFunction=Utils.encode
+File .ggen with content:
+```encodeFunction=Utils.encodeForOdata
 ```
 AND api call: `GET policies?$select=code&$filter=code%20eq%20'excludeLate'&$skip=0&$top=100`
 
@@ -23,7 +23,7 @@ ggen is executed
 
 THEN:
 
-Generated code uses Utils.encode function as below:
+Generated code uses Utils.encodeForOdata function as below:
 
 ```
 http("name of this step")

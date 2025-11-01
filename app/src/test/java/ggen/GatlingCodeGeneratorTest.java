@@ -51,7 +51,7 @@ class GatlingCodeGeneratorTest {
         String result = generator.generate("GET", "/policies", params);
         
         assertTrue(result.contains(".queryParam(\"$select\",\"code\")"));
-        assertTrue(result.contains(".queryParam(\"$filter\",TXNUtils.encodeForOdata(\"code eq 'excludeLate'\"))"));
+        assertTrue(result.contains(".queryParam(\"$filter\",Utils.encodeForOdata(\"code eq 'excludeLate'\"))"));
         assertTrue(result.contains(".queryParam(\"$skip\",\"0\")"));
         assertTrue(result.contains(".queryParam(\"$top\",\"100\")"));
     }
@@ -138,7 +138,7 @@ class GatlingCodeGeneratorTest {
         
         String result = generator.generate("GET", "/users", params);
         
-        assertTrue(result.contains("TXNUtils.encodeForOdata(\"name eq 'John'\")"));
+        assertTrue(result.contains("Utils.encodeForOdata(\"name eq 'John'\")"));
     }
     
     @Test
@@ -149,7 +149,7 @@ class GatlingCodeGeneratorTest {
         
         String result = generator.generate("GET", "/users", params);
         
-        assertTrue(result.contains("TXNUtils.encodeForOdata(\"status ne 'inactive'\")"));
+        assertTrue(result.contains("Utils.encodeForOdata(\"status ne 'inactive'\")"));
     }
     
     @Test
@@ -160,7 +160,7 @@ class GatlingCodeGeneratorTest {
         
         String result = generator.generate("GET", "/users", params);
         
-        assertTrue(result.contains("TXNUtils.encodeForOdata(\"age gt 18\")"));
+        assertTrue(result.contains("Utils.encodeForOdata(\"age gt 18\")"));
     }
     
     @Test
@@ -171,7 +171,7 @@ class GatlingCodeGeneratorTest {
         
         String result = generator.generate("GET", "/products", params);
         
-        assertTrue(result.contains("TXNUtils.encodeForOdata(\"price lt 100\")"));
+        assertTrue(result.contains("Utils.encodeForOdata(\"price lt 100\")"));
     }
     
     @Test
@@ -182,7 +182,7 @@ class GatlingCodeGeneratorTest {
         
         String result = generator.generate("GET", "/users", params);
         
-        assertTrue(result.contains("TXNUtils.encodeForOdata(\"age ge 21\")"));
+        assertTrue(result.contains("Utils.encodeForOdata(\"age ge 21\")"));
     }
     
     @Test
@@ -193,7 +193,7 @@ class GatlingCodeGeneratorTest {
         
         String result = generator.generate("GET", "/products", params);
         
-        assertTrue(result.contains("TXNUtils.encodeForOdata(\"price le 50\")"));
+        assertTrue(result.contains("Utils.encodeForOdata(\"price le 50\")"));
     }
     
     @Test
@@ -207,8 +207,8 @@ class GatlingCodeGeneratorTest {
         
         assertTrue(result.contains(".queryParam(\"filter\",\"active\")"));
         assertTrue(result.contains(".queryParam(\"search\",\"test\")"));
-        assertFalse(result.contains("TXNUtils.encodeForOdata(\"active\")"));
-        assertFalse(result.contains("TXNUtils.encodeForOdata(\"test\")"));
+        assertFalse(result.contains("Utils.encodeForOdata(\"active\")"));
+        assertFalse(result.contains("Utils.encodeForOdata(\"test\")"));
     }
     
     @Test
@@ -312,7 +312,7 @@ class GatlingCodeGeneratorTest {
         
         String result = generator.generate("GET", "/products", params);
         
-        assertTrue(result.contains("TXNUtils.encodeForOdata(\"Price gt 20 and Price lt 100\")"));
+        assertTrue(result.contains("Utils.encodeForOdata(\"Price gt 20 and Price lt 100\")"));
     }
     
     @Test
@@ -323,6 +323,6 @@ class GatlingCodeGeneratorTest {
         
         String result = generator.generate("GET", "/users", params);
         
-        assertTrue(result.contains("TXNUtils.encodeForOdata(\"name EQ 'test'\")"));
+        assertTrue(result.contains("Utils.encodeForOdata(\"name EQ 'test'\")"));
     }
 }

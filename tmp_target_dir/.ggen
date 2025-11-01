@@ -1,1 +1,1 @@
-encodeFunction=Utils.encode
+encodeFunction=Utils.encodeForOdata
