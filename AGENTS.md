@@ -4,11 +4,8 @@
 see README.md
 
 ## Tech Stack
-- Java 21
-- Gradle 9.1+
-- JUnit 5 for testing
-- Approvals tests -> https://github.com/approvals/ApprovalTests.Java
-- Picocli/JCommander for CLI parsing (if applicable)
+
+See: specs/adr/0001-development-env.md
 
 ## Target Gatling code
 

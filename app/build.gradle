@@ -9,6 +9,8 @@
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+    // Apply SpotBugs plugin for static analysis
+    id 'com.github.spotbugs' version '6.0.25'
 }
 
 repositories {
@@ -48,4 +50,28 @@ application {
 
 run {
     workingDir = project.rootDir
+}
+
+// Configure SpotBugs
+spotbugs {
+    toolVersion = '4.8.6'
+    ignoreFailures = true
+    showStackTraces = true
+    showProgress = true
+    effort = 'min'
+    reportLevel = 'high'
+}
+
+// Only run SpotBugs on main source set, not tests
+spotbugsMain {
+    enabled = true
+    reports {
+        html {
+            required = true
+        }
+    }
+}
+
+spotbugsTest {
+    enabled = false
 }
