@@ -1,5 +1,6 @@
-package ggen;
+package ggen.cli;
 
+import ggen.CLI;
 import org.approvaltests.Approvals;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,6 +20,16 @@ class CLITest {
         String result = cli.generateGatlingCodeFromFile(filename);
         
         Approvals.verify(normalizeLineEndings(result));
+        /**
+         * http("name of this step")
+         *     .get("/policies")
+         *     .disableUrlEncoding()
+         *     .queryParam("$select","code")
+         *     .queryParam("$filter",Utils.encodeForOdata("code eq 'excludeLate'"))
+         *     .queryParam("$skip","0")
+         *     .queryParam("$top","100")
+         * .check(status().is(200))
+         */
     }
     
     @Test
