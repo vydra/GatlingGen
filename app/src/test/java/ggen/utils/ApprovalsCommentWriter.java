@@ -57,15 +57,24 @@ public class ApprovalsCommentWriter {
         // Then, find and read the approval file
         String approvalContent = readApprovalFile(testClassName, testMethodName, javaFilePath);
 
-        // Find the test method and add the comment
-        boolean methodFound = addCommentToMethod(compilationUnit, testMethodName, approvalContent);
+        // Find the test method and prepare the comment
+        MethodVisitor methodVisitor = new MethodVisitor(testMethodName, approvalContent);
+        methodVisitor.visit(compilationUnit, null);
 
-        if (!methodFound) {
+        if (!methodVisitor.isMethodFound()) {
             throw new ApprovalsCommentWriterException("Test method '" + testMethodName + "' not found in " + javaFilePath);
         }
 
+        // Get the modified source code
+        String modifiedSource = compilationUnit.toString();
+
+        // If we have a formatted comment to add, insert it properly
+        if (methodVisitor.getFormattedCommentToAdd() != null) {
+            modifiedSource = insertFormattedComment(modifiedSource, testMethodName, methodVisitor.getFormattedCommentToAdd());
+        }
+
         // Write the modified Java file back
-        Files.writeString(filePath, compilationUnit.toString());
+        Files.writeString(filePath, modifiedSource);
     }
 
     /**
@@ -104,34 +113,147 @@ public class ApprovalsCommentWriter {
     }
 
     /**
-     * Adds a block comment containing the approval content to the specified test method.
+     * Inserts a properly formatted comment block into the source code after the Approvals.verify() call.
      *
-     * @param compilationUnit the parsed Java compilation unit
-     * @param testMethodName the name of the test method to modify
-     * @param approvalContent the content to add as a comment
-     * @return true if the method was found and modified, false otherwise
+     * @param sourceCode the source code to modify
+     * @param testMethodName the name of the test method
+     * @param formattedComment the properly formatted comment block to insert
+     * @return the modified source code with the comment inserted
      */
-    private boolean addCommentToMethod(CompilationUnit compilationUnit, String testMethodName, String approvalContent) {
-        MethodVisitor methodVisitor = new MethodVisitor(testMethodName, approvalContent);
-        methodVisitor.visit(compilationUnit, null);
-        return methodVisitor.isMethodFound();
+    private String insertFormattedComment(String sourceCode, String testMethodName, String formattedComment) {
+        // Find the method and the Approvals.verify() call
+        String methodSignature = "void " + testMethodName + "(";
+        int methodStart = sourceCode.indexOf(methodSignature);
+
+        if (methodStart == -1) {
+            return sourceCode; // Method not found, return unchanged
+        }
+
+        // Find the Approvals.verify() call within this method
+        int approvalsCall = sourceCode.indexOf("Approvals.verify(", methodStart);
+        if (approvalsCall == -1) {
+            return sourceCode; // Approvals.verify not found, return unchanged
+        }
+
+        // Find the beginning of the line containing Approvals.verify() to detect indentation
+        int lineStart = sourceCode.lastIndexOf("\n", approvalsCall) + 1;
+        String approvalsLine = sourceCode.substring(lineStart, sourceCode.indexOf("\n", approvalsCall));
+
+        // Extract the indentation from the Approvals.verify() line
+        StringBuilder indentationBuilder = new StringBuilder();
+        for (char c : approvalsLine.toCharArray()) {
+            if (c == ' ' || c == '\t') {
+                indentationBuilder.append(c);
+            } else {
+                break;
+            }
+        }
+        String actualIndentation = indentationBuilder.toString();
+
+        // Create the properly indented comment block
+        String properlyIndentedComment = createIndentedComment(formattedComment, actualIndentation);
+
+        // Find the method's closing brace to place the comment at the very end
+        int methodOpenBrace = sourceCode.indexOf("{", methodStart);
+        if (methodOpenBrace == -1) {
+            return sourceCode; // Opening brace not found, return unchanged
+        }
+
+        // Find the matching closing brace for this method
+        int braceCount = 1;
+        int pos = methodOpenBrace + 1;
+        int methodCloseBrace = -1;
+
+        while (pos < sourceCode.length() && braceCount > 0) {
+            char c = sourceCode.charAt(pos);
+            if (c == '{') {
+                braceCount++;
+            } else if (c == '}') {
+                braceCount--;
+                if (braceCount == 0) {
+                    methodCloseBrace = pos;
+                    break;
+                }
+            }
+            pos++;
+        }
+
+        if (methodCloseBrace == -1) {
+            return sourceCode; // Closing brace not found, return unchanged
+        }
+
+        // Find the last newline before the closing brace to insert the comment
+        int insertPoint = sourceCode.lastIndexOf("\n", methodCloseBrace);
+        if (insertPoint == -1) {
+            insertPoint = methodCloseBrace; // No newline found, insert right before the brace
+        } else {
+            insertPoint++; // Include the newline
+        }
+
+        // Insert the properly indented comment at the insertion point
+        return sourceCode.substring(0, insertPoint) + properlyIndentedComment + "\n" + sourceCode.substring(insertPoint);
     }
 
     /**
-     * Formats the approval content as a proper Java block comment.
+     * Creates a properly indented comment block using the detected indentation.
+     *
+     * @param originalComment the original comment content
+     * @param indentation the indentation to use
+     * @return the properly indented comment block
+     */
+    private String createIndentedComment(String originalComment, String indentation) {
+        // The original comment was created with a default indentation, we need to replace it
+        String[] lines = originalComment.split("\n");
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            if (i == 0 && line.trim().equals("/**")) {
+                // Opening comment line
+                result.append(indentation).append("/**");
+            } else if (i == lines.length - 1 && line.trim().equals("*/")) {
+                // Closing comment line
+                result.append(indentation).append(" */");
+            } else if (line.trim().startsWith("*")) {
+                // Content line - preserve the content but use correct indentation
+                String content = line.substring(line.indexOf("*"));
+                result.append(indentation).append(" ").append(content);
+            } else {
+                // Other lines - preserve as is but with correct indentation
+                result.append(indentation).append(line.trim());
+            }
+
+            if (i < lines.length - 1) {
+                result.append("\n");
+            }
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Formats the approval content as a proper Java block comment with proper indentation.
      *
      * @param content the raw approval content
-     * @return the formatted block comment content
+     * @param indentation the indentation string to use for each line
+     * @return the formatted block comment content including opening and closing markers
      */
-    private String formatAsBlockComment(String content) {
+    private String formatAsBlockComment(String content, String indentation) {
         StringBuilder formatted = new StringBuilder();
         String[] lines = content.split("\n");
 
+        // Add opening comment marker with proper indentation
+        formatted.append(indentation).append("/**\n");
+
+        // Add each content line with proper indentation
         for (String line : lines) {
-            formatted.append(" * ").append(line).append("\n");
+            formatted.append(indentation).append(" * ").append(line).append("\n");
         }
 
-        return formatted.toString().trim();
+        // Add closing comment marker with proper indentation
+        formatted.append(indentation).append(" */");
+
+        return formatted.toString();
     }
 
     /**
@@ -154,6 +276,7 @@ public class ApprovalsCommentWriter {
         private final String targetMethodName;
         private final String approvalContent;
         private boolean methodFound = false;
+        private String formattedCommentToAdd = null;
 
         public MethodVisitor(String targetMethodName, String approvalContent) {
             this.targetMethodName = targetMethodName;
@@ -182,21 +305,71 @@ public class ApprovalsCommentWriter {
                         .filter(comment -> comment.getContent().contains("http(\"name of this step\")"))
                         .forEach(comment -> comment.remove());
 
-                    // Create and add the new block comment at the end of the method body
-                    String formattedComment = formatAsBlockComment(approvalContent);
-                    BlockComment blockComment = new BlockComment("*\n" + formattedComment + "\n         ");
+                    // Detect the indentation level by looking at existing statements
+                    String indentation = detectIndentation(body);
 
-                    // Add an empty statement with the comment at the end of the method body
-                    // This ensures the comment appears as the last thing in the method
-                    EmptyStmt emptyStmt = new EmptyStmt();
-                    emptyStmt.setComment(blockComment);
-                    body.addStatement(emptyStmt);
+                    // Create the properly formatted comment block
+                    String formattedComment = formatAsBlockComment(approvalContent, indentation);
+
+                    // Since JavaParser doesn't preserve custom indentation in comments,
+                    // we'll modify the source code directly after JavaParser processing
+                    // For now, store the formatted comment for post-processing
+                    this.formattedCommentToAdd = formattedComment;
                 }
             }
         }
 
+        /**
+         * Detects the indentation level used in the method body by examining existing statements.
+         *
+         * @param body the method body to analyze
+         * @return the indentation string (spaces or tabs) used in the method
+         */
+        private String detectIndentation(BlockStmt body) {
+            // Default indentation - typically 8 spaces for method body content
+            String defaultIndentation = "        ";
+
+            if (body.getStatements().isEmpty()) {
+                return defaultIndentation;
+            }
+
+            // Get the string representation of the method body to analyze indentation
+            String bodyStr = body.toString();
+            String[] lines = bodyStr.split("\n");
+
+            // Look for the first non-empty line that contains a statement
+            for (String line : lines) {
+                if (line.trim().length() > 0 && !line.trim().equals("{") && !line.trim().equals("}")) {
+                    // Count leading whitespace
+                    int leadingSpaces = 0;
+                    for (char c : line.toCharArray()) {
+                        if (c == ' ') {
+                            leadingSpaces++;
+                        } else if (c == '\t') {
+                            leadingSpaces += 4; // Treat tab as 4 spaces
+                        } else {
+                            break;
+                        }
+                    }
+
+                    // Return the detected indentation
+                    StringBuilder indentation = new StringBuilder();
+                    for (int i = 0; i < leadingSpaces; i++) {
+                        indentation.append(" ");
+                    }
+                    return indentation.toString();
+                }
+            }
+
+            return defaultIndentation;
+        }
+
         public boolean isMethodFound() {
             return methodFound;
+        }
+
+        public String getFormattedCommentToAdd() {
+            return formattedCommentToAdd;
         }
     }
 }

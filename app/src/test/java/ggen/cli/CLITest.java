@@ -18,6 +18,16 @@ class CLITest {
         String filename = "src/test/resources/get_policies.http";
         String result = cli.generateGatlingCodeFromFile(filename);
         Approvals.verify(normalizeLineEndings(result));
+        /**
+         * http("name of this step")
+         *     .get("/policies")
+         *     .disableUrlEncoding()
+         *     .queryParam("$select","code")
+         *     .queryParam("$filter",Utils.encodeForOdata("code eq 'excludeLate'"))
+         *     .queryParam("$skip","0")
+         *     .queryParam("$top","100")
+         * .check(status().is(200))
+         */
     }
 
     @Test

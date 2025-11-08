@@ -49,16 +49,6 @@ class GatlingCodeGeneratorTest {
         assertTrue(result.contains(".queryParam(\"$top\",\"100\")"));
     }
 
-    /*
-* http("name of this step")
- *     .get("/policies")
- *     .disableUrlEncoding()
- *     .queryParam("$select","code")
- *     .queryParam("$filter",Utils.encodeForOdata("code eq 'excludeLate'"))
- *     .queryParam("$skip","0")
- *     .queryParam("$top","100")
- * .check(status().is(200))
-         */
     @Test
     void testGenerateCompleteExampleFromSpec() {
         GatlingCodeGenerator generator = new GatlingCodeGenerator();
@@ -69,6 +59,16 @@ class GatlingCodeGeneratorTest {
         params.put("$top", "100");
         String result = generator.generate("GET", "/policies", params);
         Approvals.verify(normalizeLineEndings(result));
+        /**
+         * http("name of this step")
+         *     .get("/policies")
+         *     .disableUrlEncoding()
+         *     .queryParam("$select","code")
+         *     .queryParam("$filter",Utils.encodeForOdata("code eq 'excludeLate'"))
+         *     .queryParam("$skip","0")
+         *     .queryParam("$top","100")
+         * .check(status().is(200))
+         */
     }
 
     @Test
