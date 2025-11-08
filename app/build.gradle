@@ -24,6 +24,8 @@ dependencies {
     
     // ApprovalTests for snapshot testing
     testImplementation libs.approvaltests
+    // Tools to rewrite java code
+    testImplementation 'com.github.javaparser:javaparser-symbol-solver-core:3.27.1'
 }
 
 testing {
