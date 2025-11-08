@@ -23,25 +23,27 @@ THEN
 
 Rewrite the CLITest.java and add the contents of the approvals fils as a block Java comment as below:
 
+```
 @Test
 void testGenerateGatlingCodeWithSpecExample() throws IOException {
-CLI cli = new CLI();
-String filename = "src/test/resources/get_policies.http";
+    CLI cli = new CLI();
+    String filename = "src/test/resources/get_policies.http";
 
-        String result = cli.generateGatlingCodeFromFile(filename);
-        
-        Approvals.verify(normalizeLineEndings(result));
-        /**
-         * http("name of this step")
-         *     .get("/policies")
-         *     .disableUrlEncoding()
-         *     .queryParam("$select","code")
-         *     .queryParam("$filter",Utils.encodeForOdata("code eq 'excludeLate'"))
-         *     .queryParam("$skip","0")
-         *     .queryParam("$top","100")
-         * .check(status().is(200))
-         */
+    String result = cli.generateGatlingCodeFromFile(filename);
+    
+    Approvals.verify(normalizeLineEndings(result));
+    /**
+     * http("name of this step")
+     *     .get("/policies")
+     *     .disableUrlEncoding()
+     *     .queryParam("$select","code")
+     *     .queryParam("$filter",Utils.encodeForOdata("code eq 'excludeLate'"))
+     *     .queryParam("$skip","0")
+     *     .queryParam("$top","100")
+     * .check(status().is(200))
+     */
     }
+```
 
 ## Negative Paths
 
