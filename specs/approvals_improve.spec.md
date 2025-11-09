@@ -56,3 +56,6 @@ void testGenerateGatlingCodeWithSpecExample() throws IOException {
     - Given junit test `testGenerateGatlingCodeWithSpecExample`
     - AND the approvals file `GatlingCodeGeneratorTest.testGenerateCompleteExampleFromSpec.approved.txt` is empty
     - THEN the tool should fail with a clear error message: "Approval file GatlingCodeGeneratorTest.testGenerateCompleteExampleFromSpec.approved.txt is empty."
+3. **Idempotent Generation**
+   GIVEN:
+   the comment is already in the target java test file, rewrite that comment, do not add another comment below it. Reuse existing comment.

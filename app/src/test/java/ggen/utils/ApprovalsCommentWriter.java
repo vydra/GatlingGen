@@ -113,12 +113,13 @@ public class ApprovalsCommentWriter {
     }
 
     /**
-     * Inserts a properly formatted comment block into the source code after the Approvals.verify() call.
+     * Updates or inserts a properly formatted comment block into the source code after the Approvals.verify() call.
+     * If an existing approval comment is found, it will be updated. Otherwise, a new comment will be added.
      *
      * @param sourceCode the source code to modify
      * @param testMethodName the name of the test method
      * @param formattedComment the properly formatted comment block to insert
-     * @return the modified source code with the comment inserted
+     * @return the modified source code with the comment updated or inserted
      */
     private String insertFormattedComment(String sourceCode, String testMethodName, String formattedComment) {
         // Find the method and the Approvals.verify() call
@@ -150,10 +151,147 @@ public class ApprovalsCommentWriter {
         }
         String actualIndentation = indentationBuilder.toString();
 
+        // First, check if there's already an existing approval comment in this method
+        ExistingCommentInfo existingComment = findExistingApprovalComment(sourceCode, methodStart, approvalsCall);
+
         // Create the properly indented comment block
         String properlyIndentedComment = createIndentedComment(formattedComment, actualIndentation);
 
-        // Find the method's closing brace to place the comment at the very end
+        if (existingComment != null) {
+            // Update the existing comment
+            return sourceCode.substring(0, existingComment.startIndex) +
+                   properlyIndentedComment +
+                   sourceCode.substring(existingComment.endIndex);
+        } else {
+            // No existing comment found, add a new one at the end of the method
+            return addNewCommentAtMethodEnd(sourceCode, methodStart, properlyIndentedComment);
+        }
+    }
+
+    /**
+     * Information about an existing approval comment found in the source code.
+     */
+    private static class ExistingCommentInfo {
+        final int startIndex;
+        final int endIndex;
+        final String indentation;
+
+        ExistingCommentInfo(int startIndex, int endIndex, String indentation) {
+            this.startIndex = startIndex;
+            this.endIndex = endIndex;
+            this.indentation = indentation;
+        }
+    }
+
+    /**
+     * Finds an existing approval comment block in the method after the Approvals.verify() call.
+     *
+     * @param sourceCode the source code to search
+     * @param methodStart the start position of the method
+     * @param approvalsCall the position of the Approvals.verify() call
+     * @return ExistingCommentInfo if found, null otherwise
+     */
+    private ExistingCommentInfo findExistingApprovalComment(String sourceCode, int methodStart, int approvalsCall) {
+        // Find the method's closing brace first to limit our search scope
+        int methodOpenBrace = sourceCode.indexOf("{", methodStart);
+        if (methodOpenBrace == -1) {
+            return null;
+        }
+
+        int braceCount = 1;
+        int pos = methodOpenBrace + 1;
+        int methodCloseBrace = -1;
+
+        while (pos < sourceCode.length() && braceCount > 0) {
+            char c = sourceCode.charAt(pos);
+            if (c == '{') {
+                braceCount++;
+            } else if (c == '}') {
+                braceCount--;
+                if (braceCount == 0) {
+                    methodCloseBrace = pos;
+                    break;
+                }
+            }
+            pos++;
+        }
+
+        if (methodCloseBrace == -1) {
+            return null;
+        }
+
+        // Look for block comments after the Approvals.verify() call within this method
+        int searchStart = approvalsCall;
+        int commentStart = sourceCode.indexOf("/**", searchStart);
+
+        while (commentStart != -1 && commentStart < methodCloseBrace) {
+            int commentEnd = sourceCode.indexOf("*/", commentStart);
+            if (commentEnd != -1 && commentEnd < methodCloseBrace) {
+                commentEnd += 2; // Include the closing */
+
+                // Check if this looks like an approval comment by looking for characteristic content
+                String commentContent = sourceCode.substring(commentStart, commentEnd);
+                if (isApprovalComment(commentContent)) {
+                    // Extract the indentation of this comment
+                    int lineStart = sourceCode.lastIndexOf("\n", commentStart) + 1;
+                    String indentation = extractIndentation(sourceCode.substring(lineStart, commentStart));
+
+                    return new ExistingCommentInfo(commentStart, commentEnd, indentation);
+                }
+            }
+
+            // Look for the next comment
+            commentStart = sourceCode.indexOf("/**", commentStart + 1);
+        }
+
+        return null;
+    }
+
+    /**
+     * Determines if a comment block is likely an approval comment based on its content.
+     *
+     * @param commentContent the content of the comment block
+     * @return true if this appears to be an approval comment
+     */
+    private boolean isApprovalComment(String commentContent) {
+        // Look for characteristic patterns that indicate this is an approval comment
+        return commentContent.contains("http(\"") ||
+               commentContent.contains(".get(") ||
+               commentContent.contains(".post(") ||
+               commentContent.contains(".put(") ||
+               commentContent.contains(".delete(") ||
+               commentContent.contains("queryParam(") ||
+               commentContent.contains(".check(status()");
+    }
+
+    /**
+     * Extracts the indentation (leading whitespace) from a string.
+     *
+     * @param text the text to analyze
+     * @return the leading whitespace as a string
+     */
+    private String extractIndentation(String text) {
+        StringBuilder indentation = new StringBuilder();
+        for (char c : text.toCharArray()) {
+            if (c == ' ' || c == '\t') {
+                indentation.append(c);
+            } else {
+                break;
+            }
+        }
+        return indentation.toString();
+    }
+
+    /**
+     * Adds a new comment at the end of the method body.
+     *
+     * @param sourceCode the source code to modify
+     * @param methodStart the start position of the method
+     * @param properlyIndentedComment the comment to add
+     * @return the modified source code
+     */
+    private String addNewCommentAtMethodEnd(String sourceCode, int methodStart, String properlyIndentedComment) {
+        // Find the method's closing brace
         int methodOpenBrace = sourceCode.indexOf("{", methodStart);
         if (methodOpenBrace == -1) {
             return sourceCode; // Opening brace not found, return unchanged

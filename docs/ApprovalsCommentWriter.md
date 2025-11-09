@@ -9,10 +9,13 @@ When using ApprovalTests, the expected output is stored in separate `.approved.t
 ## Features
 
 - **Automatic Comment Generation**: Reads approval files and formats them as proper Java block comments
+- **Smart Comment Updates**: Updates existing approval comments instead of creating duplicates
+- **Perfect Indentation**: Automatically detects and matches the indentation of surrounding code
 - **Error Handling**: Provides clear error messages for missing or empty approval files
 - **JavaParser Integration**: Uses JavaParser to safely modify Java source files
 - **Batch Processing**: Supports processing multiple test methods at once
 - **Validation**: Validates both Java files and approval files before processing
+- **Idempotent Operations**: Multiple runs on the same file update the same comment location
 
 ## Usage
 
@@ -148,13 +151,14 @@ You can integrate the `ApprovalsCommentWriter` into your build process or IDE wo
 ## Best Practices
 
 1. **Version Control**: Commit both the approval files and the updated test files
-2. **Regular Updates**: Re-run the comment writer when approval files change
+2. **Regular Updates**: Re-run the comment writer when approval files change - it will update existing comments
 3. **Code Reviews**: Review the generated comments as part of your code review process
-4. **Backup**: Always backup your test files before running batch operations
+4. **Idempotent Usage**: Safe to run multiple times - existing comments will be updated, not duplicated
+5. **Backup**: Always backup your test files before running batch operations (though updates are safe)
 
 ## Limitations
 
 - Only works with ApprovalTests that use the standard naming convention
 - Requires valid Java syntax in the target files
-- Comments are replaced each time the tool runs (no merging of existing comments)
 - Only supports block comments (not line comments)
+- Existing comments are completely replaced (no merging of content)

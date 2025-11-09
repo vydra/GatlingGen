@@ -18,7 +18,7 @@ class CLITest {
         String filename = "src/test/resources/get_policies.http";
         String result = cli.generateGatlingCodeFromFile(filename);
         Approvals.verify(normalizeLineEndings(result));
-        /**
+                /**
          * http("name of this step")
          *     .get("/policies")
          *     .disableUrlEncoding()
