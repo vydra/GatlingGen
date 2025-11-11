@@ -1,5 +1,0 @@
-http("name of this step")
-    .get("/api")
-    .disableUrlEncoding()
-    .queryParam("test","value")
-.check(status().is(200))

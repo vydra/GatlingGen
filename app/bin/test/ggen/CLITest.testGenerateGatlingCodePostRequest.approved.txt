@@ -1,5 +1,0 @@
-http("name of this step")
-    .post("/api/users")
-    .disableUrlEncoding()
-    .queryParam("format","json")
-.check(status().is(200))

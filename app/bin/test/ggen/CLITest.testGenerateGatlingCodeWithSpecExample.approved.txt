@@ -1,8 +1,0 @@
-http("name of this step")
-    .get("/policies")
-    .disableUrlEncoding()
-    .queryParam("$select","code")
-    .queryParam("$filter",Utils.encodeForOdata("code eq 'excludeLate'"))
-    .queryParam("$skip","0")
-    .queryParam("$top","100")
-.check(status().is(200))
